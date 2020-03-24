@@ -31,23 +31,26 @@ public class WaveformGenerator : MonoBehaviour {
     {
         yield return new WaitUntil(() => !SceneTransitionManager.IsLoading); //How we know "Start" has been called
         mixer.SetFloat("WaveformVolume", -80);
-        source.Play();
         while (chunksGenerated * secondPerChunk < source.clip.length)
         {
+            float[][] bands = new float[audioManager.ColumnsPerChunk][];
             for (int i = 0; i < audioManager.ColumnsPerChunk; i++)
             {
                 float newTime = (chunksGenerated * secondPerChunk) + (secondPerChunk / audioManager.ColumnsPerChunk * i);
-                if (newTime >= source.clip.length) break;
-                source.time = newTime;
-                yield return new WaitForFixedUpdate();
-                audioManager.PopulateData();
+                float[] samples = bands[i] = new float[AudioManager.SAMPLE_COUNT];
+                source.clip.GetData(samples, Mathf.RoundToInt(newTime * source.clip.frequency));
+                float[] fft = FastFourierTransform.FFT(samples);
+                for (int j = 0; j < fft.Length; j++)
+                {
+                    bands[i][j] = fft[j];
+                }
             }
             SpectrogramChunk chunk = Instantiate(spectrogramChunkPrefab, spectroParent).GetComponent<SpectrogramChunk>();
-            chunk.UpdateMesh(AudioManager._bandVolumes, chunksGenerated, this);
-            audioManager.Start(); //WE GO AGANE
+            chunk.UpdateMesh(bands, chunksGenerated, this);
+            //audioManager.Start(); //WE GO AGANE
             chunksGenerated++;
+            yield return new WaitForEndOfFrame();
         }
-        source.Stop();
         source.time = 0;
         mixer.SetFloat("WaveformVolume", 0);
     }
