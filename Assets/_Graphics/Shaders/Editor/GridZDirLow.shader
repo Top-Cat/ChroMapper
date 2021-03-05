@@ -35,8 +35,8 @@ Shader "Grid ZDir" {
 			uniform float4 _GridColour;
 			uniform float4 _BaseColour;
 			uniform float _Rotation;
-			uniform float _BPMChange_Times[1963];
-			uniform float _BPMChange_BPMs[1963];
+			uniform float _BPMChange_Times[200];
+			uniform float _BPMChange_BPMs[200];
 			uniform int _BPMChange_Count;
 			uniform float _EditorScale;
 
@@ -115,6 +115,4 @@ Shader "Grid ZDir" {
 			ENDCG
 		}
 	}
-	
-	Fallback "GridZDirLow"
 }
