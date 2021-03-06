@@ -16,7 +16,11 @@ public class BPMChangesContainer : BeatmapObjectContainerCollection
     [SerializeField] private MeasureLinesController measureLinesController;
 
     //This is a shader-level restriction and nothing I can fix.
+    #if UNITY_STANDALONE_LINUX
+    public static readonly int ShaderArrayMaxSize = 200;
+    #else
     public static readonly int ShaderArrayMaxSize = 1023; //Unity hard caps it here.
+    #endif
 
     private static readonly int Times = Shader.PropertyToID("_BPMChange_Times");
     private static readonly int BPMs = Shader.PropertyToID("_BPMChange_BPMs");

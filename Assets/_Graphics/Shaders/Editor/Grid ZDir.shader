@@ -35,8 +35,15 @@ Shader "Grid ZDir" {
 			uniform float4 _GridColour;
 			uniform float4 _BaseColour;
 			uniform float _Rotation;
-			uniform float _BPMChange_Times[1963];
-			uniform float _BPMChange_BPMs[1963];
+			
+			#ifdef SHADER_API_GLCORE
+			uniform float _BPMChange_Times[200];
+			uniform float _BPMChange_BPMs[200];
+			#else
+			uniform float _BPMChange_Times[1023];
+			uniform float _BPMChange_BPMs[1023];
+			#endif
+			
 			uniform int _BPMChange_Count;
 			uniform float _EditorScale;
 
