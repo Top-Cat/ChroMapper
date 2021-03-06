@@ -6,6 +6,8 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Localization;
 using UnityEngine.Localization.Settings;
+using UnityEngine.Localization.SmartFormat.Core.Extensions;
+using UnityEngine.Localization.SmartFormat.Extensions;
 using UnityEngine.Localization.Tables;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.UI;
@@ -93,6 +95,11 @@ public class PersistentUI : MonoBehaviour {
     private void Start() {
         CMInputCallbackInstaller.PersistentObject(transform);
         LocalizationSettings.SelectedLocale = Locale.CreateLocale(Settings.Instance.Language);
+        
+        // Wow the plugin is borked!
+        var formatter = LocalizationSettings.StringDatabase.SmartFormatter;
+        formatter.SourceExtensions.Clear();
+        formatter.SourceExtensions.Add(new ReflectionSource(formatter));
 
         UpdateDSPBufferSize();
         AudioListener.volume = Settings.Instance.Volume;

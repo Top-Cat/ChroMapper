@@ -2,8 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
-using UnityEngine;
 using UnityEngine.Localization.Settings;
+using UnityEngine.Localization.SmartFormat;
 
 /// <summary>
 /// Settings binder for localization
@@ -11,19 +11,19 @@ using UnityEngine.Localization.Settings;
 public class LanguageDropdownSettingsBinder : SettingsBinder
 {
     public TMP_Dropdown dropdown;
+    private LocalesProvider _localesProvider;
 
     private IEnumerator Start()
     {
-        yield return LocalizationSettings.InitializationOperation;
-        var available = (LocalesProvider)LocalizationSettings.AvailableLocales;
-        yield return available.PreloadOperation;
+        _localesProvider = new LocalesProvider();
+        yield return _localesProvider.PreloadOperation;
 
         // Generate list of available Locales
         var options = new List<TMP_Dropdown.OptionData>();
         int selected = 0;
-        for (int i = 0; i < available.Locales.Count; ++i)
+        for (int i = 0; i < _localesProvider.Locales.Count; ++i)
         {
-            var locale = available.Locales[i];
+            var locale = _localesProvider.Locales[i];
             if (LocalizationSettings.SelectedLocale.Identifier.Code.Equals(locale.Identifier.Code))
             {
                 selected = i;
@@ -37,7 +37,7 @@ public class LanguageDropdownSettingsBinder : SettingsBinder
 
     public void SendDropdownToSettings(int value)
     {
-        var locale = LocalizationSettings.AvailableLocales.Locales[value];
+        var locale = _localesProvider.Locales[value];
         LocalizationSettings.SelectedLocale = locale;
         SendValueToSettings(locale.Identifier.Code);
     }
