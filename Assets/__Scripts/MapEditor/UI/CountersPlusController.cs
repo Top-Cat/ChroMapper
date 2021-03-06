@@ -107,13 +107,7 @@ public class CountersPlusController : MonoBehaviour {
         }
     }
 
-    public float NPSCount
-    {
-        get
-        {
-            return NotesCount / cameraAudioSource.clip.length;
-        }
-    }
+    public float NPSCount => cameraAudioSource?.clip?.length != null ? NotesCount / cameraAudioSource.clip.length : 0;
 
     public int NotesSelected
     {
@@ -163,17 +157,11 @@ public class CountersPlusController : MonoBehaviour {
     {
         get
         {
-            return SelectionController.SelectedObjects.Count();
+            return SelectionController.SelectedObjects.Count;
         }
     }
 
-    public float OverallSPS
-    {
-        get
-        {
-            return swingsPerSecond.Total.Overall;
-        }
-    }
+    public float OverallSPS => swingsPerSecond?.Total?.Overall ?? 0;
 
     [HideInInspector]
     public int hours, minutes, seconds = 0;

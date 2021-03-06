@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Localization;
 using UnityEngine.Localization.Settings;
 using UnityEngine.SceneManagement;
 
@@ -102,7 +103,11 @@ public class SceneTransitionManager : MonoBehaviour {
     {
         if (!string.IsNullOrEmpty(key))
         {
-            var message = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("SongEditMenu", key);
+            var message = new LocalizedString()
+            {
+                TableReference = "SongEditMenu",
+                TableEntryReference = key
+            }.GetLocalizedString();
             var notification = new PersistentUI.MessageDisplayer.NotificationMessage(message, PersistentUI.DisplayMessageType.BOTTOM);
             yield return PersistentUI.Instance.DisplayMessage(notification);
         }

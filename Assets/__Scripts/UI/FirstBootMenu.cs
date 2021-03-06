@@ -10,6 +10,7 @@ using System.IO;
 using UnityEngine.Localization.Settings;
 using SFB;
 using TMPro;
+using UnityEngine.Localization;
 
 public class FirstBootMenu : MonoBehaviour {
 
@@ -126,7 +127,12 @@ public class FirstBootMenu : MonoBehaviour {
 
     private IEnumerator DoErrorFeedback(string s, bool continueAfter)
     {
-        var arg = LocalizationSettings.StringDatabase.GetLocalizedStringAsync("FirstBoot", s);
+        var arg = new LocalizedString()
+        {
+            TableReference = "FirstBoot",
+            TableEntryReference = s
+        }.GetLocalizedString();
+        
         yield return arg;
         PersistentUI.Instance.ShowDialogBox("FirstBoot", "validate.dialog",
             continueAfter ? (Action<int>)HandleGenerateMissingFoldersWithContinue : HandleGenerateMissingFolders, PersistentUI.DialogBoxPresetType.YesNo, new object[] { arg.Result });
