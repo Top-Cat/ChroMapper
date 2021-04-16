@@ -36,7 +36,7 @@ public class EventsContainer : BeatmapObjectContainerCollection, CMInput.IEventG
 
         return mode == PropMode.Prop ? "_propID" : null;
     }
-    
+
     public PropMode PropagationEditing
     {
         get => propagationEditing;
@@ -44,7 +44,7 @@ public class EventsContainer : BeatmapObjectContainerCollection, CMInput.IEventG
         {
             propagationEditing = value;
             boxSelectionPlacementController.CancelPlacement();
-            var propagationLength = (value == PropMode.Light ? platformDescriptor.LightingManagers[EventTypeToPropagate]?.ControllingLights?.Count :
+            var propagationLength = (value == PropMode.Light ? platformDescriptor.LightingManagers[EventTypeToPropagate]?.LightIDPlacementMapReverse?.Count :
                 platformDescriptor.LightingManagers[EventTypeToPropagate]?.LightsGroupedByZ?.Length) ?? 0;
             labels.UpdateLabels(value, EventTypeToPropagate, value == PropMode.Off ? 16 : propagationLength + 1);
             eventPlacement.SetGridSize(value != PropMode.Off ? propagationLength + 1 : SpecialEventTypeCount + platformDescriptor.LightingManagers.Count(s => s != null));
@@ -273,7 +273,7 @@ public class EventsContainer : BeatmapObjectContainerCollection, CMInput.IEventG
     protected override void UpdateContainerData(BeatmapObjectContainer con, BeatmapObject obj)
     {
         eventAppearanceSO.SetEventAppearance(con as BeatmapEventContainer, true,
-            AllBoostEvents.Where(x => x._time <= obj._time).LastOrDefault()?._value == 1);
+            AllBoostEvents.FindLast(x => x._time <= obj._time)?._value == 1);
         MapEvent e = obj as MapEvent;
         if (PropagationEditing != PropMode.Off && e._type != EventTypeToPropagate) con.SafeSetActive(false);
     }

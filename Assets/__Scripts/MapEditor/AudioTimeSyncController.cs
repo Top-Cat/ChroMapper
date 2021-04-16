@@ -60,6 +60,8 @@ public class AudioTimeSyncController : MonoBehaviour, CMInput.IPlaybackActions, 
     }
 
     public bool IsPlaying { get; private set; }
+    private float playStartTime;
+    private const float cancelPlayInputDuration = 0.3f;
 
     private float offsetMS;
     public float offsetBeat { get; private set; } = -1;
@@ -139,7 +141,8 @@ public class AudioTimeSyncController : MonoBehaviour, CMInput.IPlaybackActions, 
                 var correction = CurrentSeconds > 1 ? trackTime / CurrentSeconds : 1f;
 
                 // Snap forward if we are more than a 2 frames out of sync as we're trying to make it one frame out?
-                if (Mathf.Abs(trackTime - CurrentSeconds) >= 2 * Time.smoothDeltaTime * (songSpeed / 10f))
+                float frameTime = Mathf.Max(0.04f, Time.smoothDeltaTime * 2);
+                if (Mathf.Abs(trackTime - CurrentSeconds) >= frameTime * (songSpeed / 10f))
                 {
                     time = trackTime;
                     correction = 1;
@@ -175,12 +178,13 @@ public class AudioTimeSyncController : MonoBehaviour, CMInput.IPlaybackActions, 
         IsPlaying = !IsPlaying;
         if (IsPlaying)
         {
-            if (songAudioSource.time >= songAudioSource.clip.length - 0.1f)
+            if (CurrentSeconds >= songAudioSource.clip.length - 0.1f)
             {
                 Debug.LogError(":hyperPepega: :mega: STOP TRYING TO PLAY THE SONG AT THE VERY END");
             }
             else
             {
+                playStartTime = CurrentSeconds;
                 songAudioSource.time = CurrentSeconds;
                 songAudioSource.Play();
             }
@@ -191,6 +195,14 @@ public class AudioTimeSyncController : MonoBehaviour, CMInput.IPlaybackActions, 
             SnapToGrid();
         }
         if (OnPlayToggle != null) OnPlayToggle(IsPlaying);
+    }
+
+    public void CancelPlaying()
+    {
+        if (!IsPlaying) return;
+
+        TogglePlaying();
+        CurrentSeconds = playStartTime;
     }
 
     public void SnapToGrid(float seconds)
@@ -247,6 +259,11 @@ public class AudioTimeSyncController : MonoBehaviour, CMInput.IPlaybackActions, 
     public void OnTogglePlaying(InputAction.CallbackContext context)
     {
         if (context.performed) TogglePlaying();
+
+        // if play is held and released a significant time later, cancel playing instead of merely toggling
+        if (!CMInputCallbackInstaller.IsActionMapDisabled(typeof(CMInput.IPlaybackActions))
+            && context.canceled
+            && context.duration >= cancelPlayInputDuration) CancelPlaying();
     }
 
     public void OnResetTime(InputAction.CallbackContext context)

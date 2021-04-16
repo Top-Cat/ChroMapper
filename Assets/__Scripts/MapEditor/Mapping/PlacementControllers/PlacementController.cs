@@ -165,8 +165,6 @@ public abstract class PlacementController<BO, BOC, BOCC> : MonoBehaviour, CMInpu
     public abstract BeatmapAction GenerateAction(BeatmapObject spawned, IEnumerable<BeatmapObject> conflicting);
     public abstract void OnPhysicsRaycast(RaycastHit hit, Vector3 transformedPoint);
 
-    public virtual void AfterDraggedObjectDataChanged() { }
-
     public virtual void ClickAndDragFinished() { }
 
     public virtual void CancelPlacement() { }
@@ -179,7 +177,7 @@ public abstract class PlacementController<BO, BOC, BOCC> : MonoBehaviour, CMInpu
 
     public void OnPlaceObject(InputAction.CallbackContext context)
     {
-        if (customStandaloneInputModule.IsPointerOverGameObject<GraphicRaycaster>(-1, true) || !context.performed) return;
+        if (customStandaloneInputModule.IsPointerOverGameObject<GraphicRaycaster>(-1, true) || !KeybindsController.IsMouseInWindow || !context.performed) return;
         if (!isDraggingObject && !isDraggingObjectAtTime && isOnPlacement && instantiatedContainer != null && IsValid
             && !PersistentUI.Instance.DialogBox_IsEnabled &&
             queuedData?._time >= 0 && !applicationFocusChanged) ApplyToMap();
@@ -335,8 +333,7 @@ public abstract class PlacementController<BO, BOC, BOCC> : MonoBehaviour, CMInpu
             if (customStandaloneInputModule.IsPointerOverGameObject<GraphicRaycaster>(-1, true)) return;
             if (BeatmapObjectContainerCollection.TrackFilterID != null && !objectContainerCollection.IgnoreTrackFilter)
             {
-                if (queuedData._customData == null) queuedData._customData = new SimpleJSON.JSONObject();
-                queuedData._customData["track"] = BeatmapObjectContainerCollection.TrackFilterID;
+                queuedData.GetOrCreateCustomData()["track"] = BeatmapObjectContainerCollection.TrackFilterID;
             }
             else queuedData?._customData?.Remove("track");
             CalculateTimes(hit, out Vector3 roundedHit, out float roundedTime);
@@ -377,15 +374,13 @@ public abstract class PlacementController<BO, BOC, BOCC> : MonoBehaviour, CMInpu
                 draggedObjectContainer.objectData._time = placementZ / EditorScaleController.EditorScale;
                 if (draggedObjectContainer != null)
                 {
-                    draggedObjectContainer?.UpdateGridPosition();
+                    draggedObjectContainer.UpdateGridPosition();
                 }
-                AfterDraggedObjectDataChanged();
             }
         }
         else
         {
             ColliderExit();
-            return;
         }
     }
 
@@ -403,5 +398,12 @@ public abstract class PlacementController<BO, BOC, BOCC> : MonoBehaviour, CMInpu
     public void OnPrecisionPlacementToggle(InputAction.CallbackContext context)
     {
         usePrecisionPlacement = context.performed && Settings.Instance.PrecisionPlacementGrid;
+    }
+
+    protected BOC ObjectUnderCursor() {
+        if (customStandaloneInputModule.IsPointerOverGameObject<GraphicRaycaster>(-1, true)) return null;
+
+        var ray = mainCamera.ScreenPointToRay(mousePosition);
+        return !Physics.Raycast(ray, out var hit, 99, 1 << 9) ? null : hit.transform.GetComponentInParent<BOC>();
     }
 }
