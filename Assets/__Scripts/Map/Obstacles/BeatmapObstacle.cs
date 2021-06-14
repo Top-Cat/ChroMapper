@@ -139,7 +139,7 @@ public class BeatmapObstacle : BeatmapObject, IBeatmapObjectBounds
             }
         }
 
-        return new ObstacleBounds(width, height, position, startHeight);
+        return new ObstacleBounds(width, height, position + width / 2, startHeight);
     }
 
     public bool IsNoodleExtensionsWall => _customData != null &&
